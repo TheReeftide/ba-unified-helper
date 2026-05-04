@@ -1,6 +1,8 @@
 package com.grimm.baunifiedhelper.tracker;
 
 import com.grimm.baunifiedhelper.data.BaNpcData;
+import java.util.HashSet;
+import java.util.Set;
 import net.runelite.api.Client;
 import net.runelite.api.NPC;
 import net.runelite.api.Player;
@@ -26,6 +28,39 @@ public class BaAreaTracker
 		}
 
 		return false;
+	}
+
+	public boolean isInConfiguredBaRegion(String configuredRegionIds)
+	{
+		int currentRegionId = getCurrentRegionId();
+
+		if (currentRegionId <= 0)
+		{
+			return false;
+		}
+
+		Set<Integer> regionIds = parseRegionIds(configuredRegionIds);
+		return regionIds.contains(currentRegionId);
+	}
+
+	public String getDetectionReason(boolean foundBaNpcs, boolean inConfiguredRegion)
+	{
+		if (inConfiguredRegion && foundBaNpcs)
+		{
+			return "Configured BA region + BA NPCs";
+		}
+
+		if (inConfiguredRegion)
+		{
+			return "Configured BA region";
+		}
+
+		if (foundBaNpcs)
+		{
+			return "BA NPCs loaded";
+		}
+
+		return "Not detected";
 	}
 
 	public int getCurrentRegionId()
@@ -76,14 +111,37 @@ public class BaAreaTracker
 		return worldPoint.getPlane();
 	}
 
-	public String getDetectionReason(boolean foundBaNpcs)
+	private Set<Integer> parseRegionIds(String configuredRegionIds)
 	{
-		if (foundBaNpcs)
+		Set<Integer> regionIds = new HashSet<>();
+
+		if (configuredRegionIds == null || configuredRegionIds.trim().isEmpty())
 		{
-			return "BA NPCs loaded";
+			return regionIds;
 		}
 
-		return "Not detected";
+		String[] parts = configuredRegionIds.split(",");
+
+		for (String part : parts)
+		{
+			String trimmed = part.trim();
+
+			if (trimmed.isEmpty())
+			{
+				continue;
+			}
+
+			try
+			{
+				regionIds.add(Integer.parseInt(trimmed));
+			}
+			catch (NumberFormatException ignored)
+			{
+				// Ignore malformed region entries so one bad value does not break detection.
+			}
+		}
+
+		return regionIds;
 	}
 
 	private WorldPoint getLocalPlayerWorldPoint()

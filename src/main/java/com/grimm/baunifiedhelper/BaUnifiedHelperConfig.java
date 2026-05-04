@@ -18,23 +18,30 @@ public interface BaUnifiedHelperConfig extends Config
 	String generalSection = "general";
 
 	@ConfigSection(
+		name = "Detection",
+		description = "Barbarian Assault area and state detection settings.",
+		position = 1
+	)
+	String detectionSection = "detection";
+
+	@ConfigSection(
 		name = "NPCs",
 		description = "NPC count and highlight settings.",
-		position = 1
+		position = 2
 	)
 	String npcSection = "npcs";
 
 	@ConfigSection(
 		name = "NPC Colors",
 		description = "Colors used for Barbarian Assault NPC highlights.",
-		position = 2
+		position = 3
 	)
 	String npcColorsSection = "npcColors";
 
 	@ConfigSection(
 		name = "Testing",
 		description = "Temporary testing tools for checking overlays outside Barbarian Assault.",
-		position = 3
+		position = 4
 	)
 	String testingSection = "testing";
 
@@ -48,6 +55,18 @@ public interface BaUnifiedHelperConfig extends Config
 	default boolean showHud()
 	{
 		return true;
+	}
+
+	@ConfigItem(
+		keyName = "customBaRegionIds",
+		name = "Custom BA Region IDs",
+		description = "Comma-separated region IDs treated as Barbarian Assault areas. Useful while testing live BA detection.",
+		section = detectionSection,
+		position = 0
+	)
+	default String customBaRegionIds()
+	{
+		return "";
 	}
 
 	@ConfigItem(

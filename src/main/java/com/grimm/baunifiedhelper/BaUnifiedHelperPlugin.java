@@ -98,12 +98,15 @@ public class BaUnifiedHelperPlugin extends Plugin
 		}
 
 		boolean foundBaNpcs = npcTracker.updateNpcCounts(waveState);
-		String detectionReason = areaTracker.getDetectionReason(foundBaNpcs);
+		boolean inConfiguredRegion = areaTracker.isInConfiguredBaRegion(config.customBaRegionIds());
+		boolean inBa = foundBaNpcs || inConfiguredRegion;
+		String detectionReason = areaTracker.getDetectionReason(foundBaNpcs, inConfiguredRegion);
 
-		waveState.updateLiveState(foundBaNpcs, getActiveRole(), detectionReason);
+		waveState.updateLiveState(inBa, getActiveRole(), detectionReason);
 		updateLocationSnapshot();
 
-		// TODO: Replace NPC-only BA detection with stronger BA area/widget detection.
+		// TODO: Add known BA regions once confirmed during live testing.
+		// TODO: Replace/add widget-based role and wave detection.
 		// TODO: v0.2 call tracking and call-change timer.
 		// TODO: v0.3 ground item labels/highlights.
 		// TODO: v0.4 inventory/spellbook/widget highlights.
