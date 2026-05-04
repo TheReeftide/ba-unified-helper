@@ -3,6 +3,7 @@ package com.grimm.baunifiedhelper.overlay;
 import com.grimm.baunifiedhelper.BaUnifiedHelperConfig;
 import com.grimm.baunifiedhelper.BaUnifiedHelperPlugin;
 import com.grimm.baunifiedhelper.BaWaveState;
+import com.grimm.baunifiedhelper.tracker.BaWidgetDebugEntry;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import javax.inject.Inject;
@@ -104,6 +105,31 @@ public class BaHudOverlay extends OverlayPanel
 				.build());
 		}
 
+		if (config.debugMode() && config.showWidgetDiagnostics())
+		{
+			panelComponent.getChildren().add(TitleComponent.builder()
+				.text("Widget Diagnostics")
+				.build());
+
+			if (plugin.getWidgetDebugEntries().isEmpty())
+			{
+				panelComponent.getChildren().add(LineComponent.builder()
+					.left("Matches")
+					.right("None")
+					.build());
+			}
+			else
+			{
+				for (BaWidgetDebugEntry entry : plugin.getWidgetDebugEntries())
+				{
+					panelComponent.getChildren().add(LineComponent.builder()
+						.left(Integer.toString(entry.getWidgetId()))
+						.right(entry.getSource() + ": " + shorten(entry.getValue(), 28))
+						.build());
+				}
+			}
+		}
+
 		return super.render(graphics);
 	}
 
@@ -113,5 +139,20 @@ public class BaHudOverlay extends OverlayPanel
 		int minutes = totalSeconds / 60;
 		int seconds = totalSeconds % 60;
 		return String.format("%02d:%02d", minutes, seconds);
+	}
+
+	private String shorten(String value, int maxLength)
+	{
+		if (value == null)
+		{
+			return "";
+		}
+
+		if (value.length() <= maxLength)
+		{
+			return value;
+		}
+
+		return value.substring(0, Math.max(0, maxLength - 3)) + "...";
 	}
 }

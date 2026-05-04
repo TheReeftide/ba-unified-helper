@@ -6,6 +6,11 @@ import com.grimm.baunifiedhelper.overlay.BaHudOverlay;
 import com.grimm.baunifiedhelper.overlay.BaNpcOverlay;
 import com.grimm.baunifiedhelper.tracker.BaAreaTracker;
 import com.grimm.baunifiedhelper.tracker.BaNpcTracker;
+import com.grimm.baunifiedhelper.tracker.BaWidgetDebugEntry;
+import com.grimm.baunifiedhelper.tracker.BaWidgetDebugTracker;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import javax.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
@@ -43,9 +48,11 @@ public class BaUnifiedHelperPlugin extends Plugin
 	private BaDebugVisualOverlay debugVisualOverlay;
 
 	private final BaWaveState waveState = new BaWaveState();
+	private final List<BaWidgetDebugEntry> widgetDebugEntries = new ArrayList<>();
 
 	private BaNpcTracker npcTracker;
 	private BaAreaTracker areaTracker;
+	private BaWidgetDebugTracker widgetDebugTracker;
 	private int debugTicks;
 
 	@Override
@@ -53,6 +60,7 @@ public class BaUnifiedHelperPlugin extends Plugin
 	{
 		npcTracker = new BaNpcTracker(client);
 		areaTracker = new BaAreaTracker(client);
+		widgetDebugTracker = new BaWidgetDebugTracker(client);
 
 		overlayManager.add(hudOverlay);
 		overlayManager.add(npcOverlay);
@@ -69,9 +77,11 @@ public class BaUnifiedHelperPlugin extends Plugin
 		overlayManager.remove(debugVisualOverlay);
 
 		waveState.reset();
+		widgetDebugEntries.clear();
 		debugTicks = 0;
 		npcTracker = null;
 		areaTracker = null;
+		widgetDebugTracker = null;
 
 		log.info("BA Unified Helper stopped");
 	}
@@ -80,12 +90,14 @@ public class BaUnifiedHelperPlugin extends Plugin
 	public void onGameTick(GameTick event)
 	{
 		updateLocationSnapshot();
+		updateWidgetDiagnostics();
 
 		if (config.debugMode())
 		{
 			debugTicks++;
 			waveState.setDebugValues(getActiveRole(), debugTicks);
 			updateLocationSnapshot();
+			updateWidgetDiagnostics();
 			return;
 		}
 
@@ -94,6 +106,7 @@ public class BaUnifiedHelperPlugin extends Plugin
 		if (npcTracker == null || areaTracker == null)
 		{
 			waveState.reset();
+			widgetDebugEntries.clear();
 			return;
 		}
 
@@ -104,6 +117,7 @@ public class BaUnifiedHelperPlugin extends Plugin
 
 		waveState.updateLiveState(inBa, getActiveRole(), detectionReason);
 		updateLocationSnapshot();
+		updateWidgetDiagnostics();
 
 		// TODO: Add known BA regions once confirmed during live testing.
 		// TODO: Replace/add widget-based role and wave detection.
@@ -126,6 +140,26 @@ public class BaUnifiedHelperPlugin extends Plugin
 			areaTracker.getWorldY(),
 			areaTracker.getPlane()
 		);
+	}
+
+	private void updateWidgetDiagnostics()
+	{
+		widgetDebugEntries.clear();
+
+		if (!config.debugMode() || !config.showWidgetDiagnostics() || widgetDebugTracker == null)
+		{
+			return;
+		}
+
+		widgetDebugEntries.addAll(widgetDebugTracker.findMatchingWidgets(
+			config.widgetDiagnosticFilter(),
+			config.maxWidgetDiagnosticLines()
+		));
+	}
+
+	public List<BaWidgetDebugEntry> getWidgetDebugEntries()
+	{
+		return Collections.unmodifiableList(widgetDebugEntries);
 	}
 
 	public BaRole getActiveRole()

@@ -6,6 +6,7 @@ import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigItem;
 import net.runelite.client.config.ConfigSection;
+import net.runelite.client.config.Range;
 
 @ConfigGroup("baunifiedhelper")
 public interface BaUnifiedHelperConfig extends Config
@@ -255,11 +256,51 @@ public interface BaUnifiedHelperConfig extends Config
 	}
 
 	@ConfigItem(
+		keyName = "showWidgetDiagnostics",
+		name = "Show Widget Diagnostics",
+		description = "Shows matching visible widget text/name entries while Debug/Test Mode is enabled.",
+		section = testingSection,
+		position = 3
+	)
+	default boolean showWidgetDiagnostics()
+	{
+		return false;
+	}
+
+	@ConfigItem(
+		keyName = "widgetDiagnosticFilter",
+		name = "Widget Diagnostic Filter",
+		description = "Comma-separated text filters for visible widget diagnostics.",
+		section = testingSection,
+		position = 4
+	)
+	default String widgetDiagnosticFilter()
+	{
+		return "wave,call,horn,attack,defend,collect,heal,egg,tofu,crackers,worms,accurate,aggressive,controlled,defensive";
+	}
+
+	@Range(
+		min = 1,
+		max = 20
+	)
+	@ConfigItem(
+		keyName = "maxWidgetDiagnosticLines",
+		name = "Max Widget Diagnostic Lines",
+		description = "Maximum number of widget diagnostic lines shown on the HUD.",
+		section = testingSection,
+		position = 5
+	)
+	default int maxWidgetDiagnosticLines()
+	{
+		return 8;
+	}
+
+	@ConfigItem(
 		keyName = "manualRole",
 		name = "Manual Role",
 		description = "Overrides the displayed role while testing. Auto will use detected role later.",
 		section = testingSection,
-		position = 3
+		position = 6
 	)
 	default BaManualRole manualRole()
 	{
