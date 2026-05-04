@@ -4,6 +4,7 @@ import com.google.inject.Provides;
 import com.grimm.baunifiedhelper.overlay.BaDebugVisualOverlay;
 import com.grimm.baunifiedhelper.overlay.BaHudOverlay;
 import com.grimm.baunifiedhelper.overlay.BaNpcOverlay;
+import com.grimm.baunifiedhelper.tracker.BaAreaTracker;
 import com.grimm.baunifiedhelper.tracker.BaNpcTracker;
 import javax.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
@@ -44,12 +45,14 @@ public class BaUnifiedHelperPlugin extends Plugin
 	private final BaWaveState waveState = new BaWaveState();
 
 	private BaNpcTracker npcTracker;
+	private BaAreaTracker areaTracker;
 	private int debugTicks;
 
 	@Override
 	protected void startUp()
 	{
 		npcTracker = new BaNpcTracker(client);
+		areaTracker = new BaAreaTracker(client);
 
 		overlayManager.add(hudOverlay);
 		overlayManager.add(npcOverlay);
@@ -68,6 +71,7 @@ public class BaUnifiedHelperPlugin extends Plugin
 		waveState.reset();
 		debugTicks = 0;
 		npcTracker = null;
+		areaTracker = null;
 
 		log.info("BA Unified Helper stopped");
 	}
@@ -75,29 +79,50 @@ public class BaUnifiedHelperPlugin extends Plugin
 	@Subscribe
 	public void onGameTick(GameTick event)
 	{
+		updateLocationSnapshot();
+
 		if (config.debugMode())
 		{
 			debugTicks++;
 			waveState.setDebugValues(getActiveRole(), debugTicks);
+			updateLocationSnapshot();
 			return;
 		}
 
 		debugTicks = 0;
 
-		if (npcTracker == null)
+		if (npcTracker == null || areaTracker == null)
 		{
 			waveState.reset();
 			return;
 		}
 
 		boolean foundBaNpcs = npcTracker.updateNpcCounts(waveState);
-		waveState.updateLiveState(foundBaNpcs, getActiveRole());
+		String detectionReason = areaTracker.getDetectionReason(foundBaNpcs);
+
+		waveState.updateLiveState(foundBaNpcs, getActiveRole(), detectionReason);
+		updateLocationSnapshot();
 
 		// TODO: Replace NPC-only BA detection with stronger BA area/widget detection.
 		// TODO: v0.2 call tracking and call-change timer.
 		// TODO: v0.3 ground item labels/highlights.
 		// TODO: v0.4 inventory/spellbook/widget highlights.
 		// TODO: v0.5 cannon ammo overlay.
+	}
+
+	private void updateLocationSnapshot()
+	{
+		if (areaTracker == null)
+		{
+			return;
+		}
+
+		waveState.setLocationSnapshot(
+			areaTracker.getCurrentRegionId(),
+			areaTracker.getWorldX(),
+			areaTracker.getWorldY(),
+			areaTracker.getPlane()
+		);
 	}
 
 	public BaRole getActiveRole()

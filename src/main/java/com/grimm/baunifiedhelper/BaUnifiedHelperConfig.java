@@ -224,11 +224,23 @@ public interface BaUnifiedHelperConfig extends Config
 	}
 
 	@ConfigItem(
+		keyName = "showDebugDiagnostics",
+		name = "Show Debug Diagnostics",
+		description = "Shows region, location, and BA detection diagnostics while Debug/Test Mode is enabled.",
+		section = testingSection,
+		position = 2
+	)
+	default boolean showDebugDiagnostics()
+	{
+		return true;
+	}
+
+	@ConfigItem(
 		keyName = "manualRole",
 		name = "Manual Role",
 		description = "Overrides the displayed role while testing. Auto will use detected role later.",
 		section = testingSection,
-		position = 2
+		position = 3
 	)
 	default BaManualRole manualRole()
 	{

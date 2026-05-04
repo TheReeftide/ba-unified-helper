@@ -86,6 +86,24 @@ public class BaHudOverlay extends OverlayPanel
 				.build());
 		}
 
+		if (config.debugMode() && config.showDebugDiagnostics())
+		{
+			panelComponent.getChildren().add(LineComponent.builder()
+				.left("Detection")
+				.right(state.getDetectionReason())
+				.build());
+
+			panelComponent.getChildren().add(LineComponent.builder()
+				.left("Region")
+				.right(Integer.toString(state.getRegionId()))
+				.build());
+
+			panelComponent.getChildren().add(LineComponent.builder()
+				.left("World")
+				.right(state.getWorldX() + ", " + state.getWorldY() + ", " + state.getPlane())
+				.build());
+		}
+
 		return super.render(graphics);
 	}
 

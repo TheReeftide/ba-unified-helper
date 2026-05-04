@@ -13,6 +13,12 @@ public class BaWaveState
 	private int runnersAlive;
 	private int healersAlive;
 
+	private String detectionReason = "None";
+	private int regionId = -1;
+	private int worldX = -1;
+	private int worldY = -1;
+	private int plane = -1;
+
 	public void reset()
 	{
 		inBa = false;
@@ -24,6 +30,11 @@ public class BaWaveState
 		rangersAlive = 0;
 		runnersAlive = 0;
 		healersAlive = 0;
+		detectionReason = "None";
+		regionId = -1;
+		worldX = -1;
+		worldY = -1;
+		plane = -1;
 	}
 
 	public void setDebugValues(BaRole role, int waveTicks)
@@ -33,14 +44,16 @@ public class BaWaveState
 		this.waveNumber = 1;
 		this.waveTicks = waveTicks;
 		this.role = role == null ? BaRole.UNKNOWN : role;
+		this.detectionReason = "Debug/Test Mode";
 
 		setNpcCounts(4, 3, 5, 4);
 	}
 
-	public void updateLiveState(boolean inBa, BaRole role)
+	public void updateLiveState(boolean inBa, BaRole role, String detectionReason)
 	{
 		this.inBa = inBa;
 		this.debugMode = false;
+		this.detectionReason = detectionReason == null ? "Unknown" : detectionReason;
 
 		if (inBa)
 		{
@@ -50,7 +63,13 @@ public class BaWaveState
 		}
 		else
 		{
+			boolean preserveLocation = true;
 			reset();
+
+			if (preserveLocation)
+			{
+				this.detectionReason = detectionReason == null ? "Not detected" : detectionReason;
+			}
 		}
 	}
 
@@ -60,6 +79,14 @@ public class BaWaveState
 		this.rangersAlive = rangersAlive;
 		this.runnersAlive = runnersAlive;
 		this.healersAlive = healersAlive;
+	}
+
+	public void setLocationSnapshot(int regionId, int worldX, int worldY, int plane)
+	{
+		this.regionId = regionId;
+		this.worldX = worldX;
+		this.worldY = worldY;
+		this.plane = plane;
 	}
 
 	public boolean isInBa()
@@ -105,5 +132,30 @@ public class BaWaveState
 	public int getHealersAlive()
 	{
 		return healersAlive;
+	}
+
+	public String getDetectionReason()
+	{
+		return detectionReason;
+	}
+
+	public int getRegionId()
+	{
+		return regionId;
+	}
+
+	public int getWorldX()
+	{
+		return worldX;
+	}
+
+	public int getWorldY()
+	{
+		return worldY;
+	}
+
+	public int getPlane()
+	{
+		return plane;
 	}
 }
